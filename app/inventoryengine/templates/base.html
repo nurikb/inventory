@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+    {% load static %}
+      <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+      <link rel="stylesheet" href="{% static 'css/css.css' %}">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+</head>
+<header >
+
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark" >
+    <div class="container-fluid">
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'admissions_url' %}">Пополнение</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'equipmentsForWorkers_url' %}">
+              Закреплено
+            </a>
+          </li>
+          <li>
+            <a class="nav-link" href="{% url 'relocation_history_url' %}">Перемещение</a>
+          </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a href="{% url 'upload_url' %}" class="nav-link">Накладные</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'workers_url' %}" class="nav-link" id="navbarDropdown2">Добавить</a>
+          </li>
+          {% endif %}
+          {% if user.is_authenticated %}
+            <li>
+              <a class="nav-link" href="/logout">Выход</a>
+            </li>
+          {% else %}
+            <li>
+              <a class="nav-link" href="/login">Вход</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+</header>
+<figure class="highlight">
+
+  {% block content %}
+
+  {% endblock %}
+
+  {% block delete %}
+
+  {% endblock %}
+
+  {% if page_object %}
+
+  <nav aria-label="Page navigation example">
+    <ul class="pagination pg-blue mb-0 mt-2">
+      <li class="page-item {% if not prev_url %}disabled{% endif %}">
+        <a class="page-link waves-effect waves-effect" href="{{ prev_url }}"  aria-label="Previous">
+          <span aria-hidden="true">«</span>
+        </a>
+      </li>
+      {% for n in page_object.paginator.page_range %}
+
+        {% if page_object.number == n %}
+          <li class="page-item active">
+            <a href="?page={{ n }}" class="page-link">{{ n }}</a>
+          </li>
+        {% elif n > page_object.number|add:-3 and n < page_object.number|add:3 %}
+          <li class="page-item">
+            <a href="?page={{ n }}" class="page-link">{{ n }}</a>
+          </li>
+
+        {% endif %}
+
+      {% endfor %}
+      <li class="page-item {% if not next_url %}disabled{% endif %}">
+        <a class="page-link waves-effect waves-effect" href="{{ next_url }}"  aria-label="Next">
+          <span aria-hidden="true">»</span>
+          <span class="sr-only">Next</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+
+  </figure>
+{% for u in page_object %}
+
+  <div class="modal fade" id="myModal1{{ u.upload.id }}" role="dialog">
+    <div class="modal-dialog modal-lg" >
+      <div class="modal-content " style="height: 600px;">
+        <div class="modal-body">
+          <img src="{{ u.upload.image.url }}" width="760" height="550">
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endfor %}
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+<script>
+$(".custom-file-input").on("change", function() {
+  var fileName = $(this).val().split("\\").pop();
+  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+});
+</script>
+</body>
+</html>

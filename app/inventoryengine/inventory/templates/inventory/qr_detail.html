@@ -1,0 +1,37 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+ Смена владельца
+{% endblock %}
+
+{% block content %}
+<form action="{% url 'qr_url' admission_id=eq.id %}" method="post">
+  {% csrf_token %}
+
+    <h1 class="h4 text-start my-4 offset-1" style="height: 50px;">QR code</h1>
+      <div class="row mb-3">
+        <div class="col-3 offset-1">
+          <label>Тип</label>
+          <input type="text" class='form-control mb-3' value="{{ eq.id_type }}" readonly required>
+          <label>Название учетной единицы</label>
+          <input  class='form-control  mb-3' value="{{ eq.eq_name }}" readonly>
+          <label>Сотрудник</label>
+          <input type="text" class='form-control  mb-3' value="{{ eq.id_workers }}" readonly>
+          <label>Кабинет куда</label>
+          <input name='data' type="text" class='form-control  mb-3' value="{{ eq.id_room }}"readonly>
+
+          <input name='data' type="hidden" class='form-control' value="{{ eq.id_type }}: {{ eq.eq_name }}, {{ eq.id_workers }}, {{ eq.id_room }}" >
+        </div>
+        <div id="QR" class="col-3 offset-2">
+          {% if data %}
+            {% load static %}
+              <a href="{% static 'images/test.png' %}" download><img src="{% static 'images/test.png' %}" width="300" height="300"></a>
+          {% endif %}
+        </div>
+      </div>
+
+
+
+  <button type="submit" class="btn btn-primary offset-1">Qr code</button>
+</form>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+Записи о приходе
+{% endblock %}
+
+{% block content %}
+
+<form action="{% url 'assign_to_worker_url' admission_id=admission.id %}" method="post">
+  <div class="conteiner">
+    <h1 class="h4 text-start my-4 offset-1" style="height: 50px;">Назначение материально ответственного лица</h1>
+
+      {% load bootstrap4 %}
+      {% bootstrap_css %}
+      {% bootstrap_javascript jquery='full' %}
+      {{ form.media }}
+
+      {% csrf_token %}
+
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Дата</label>
+        {{ form.date }}
+      </div>
+      <div class="col-3 offset-1">
+        <label>Инвентарный номер</label>
+
+        {{ form.inven_num }}
+
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        {{ form.inven_num.errors }}
+      </div>
+      {% endif %}
+
+
+    </div>
+    <div class="row">
+
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Тип</label>
+        <input class='form-control' value="{{ admission.id_type }}" readonly >
+      </div>
+
+      <div class="col-3 offset-1">
+        <label>Название учетной единицы</label>
+        <input class='form-control' value="{{ admission.name }}" readonly >
+        <input id="id_eq_name" type="hidden" name="eq_name" class='form-control' value="{{ admission.id }}" readonly required>
+
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+      <label>Накладная</label>
+      <input class='form-control' value="{{ admission.upload }}" readonly >
+      <input id="id_upload" type="hidden" name="upload" class='form-control' value="{{ admission.upload.id }}" readonly required>
+      </div>
+
+      <div class="col-3 offset-1">
+        <label>Кабинет куда</label>
+
+        {{ form.id_room }}
+
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Сотрудник</label>
+
+        {{ form.id_workers }}
+
+      </div>
+
+    </div>
+  </div>
+  <button type="submit" onclick="myFunction()" class="btn btn-primary offset-1">продолжить</button>
+</form>
+{% if not form.errors %}
+<script>
+  function randomNumber(len) {
+      var randomNumber;
+      var n = '';
+
+      for(var count = 0; count < len; count++) {
+          randomNumber = Math.floor(Math.random() * 10);
+          n += randomNumber.toString();
+      }
+      return n;
+  }
+
+  document.getElementById("demo").value = randomNumber(7);
+</script>
+{% endif %}
+
+
+{% endblock %}

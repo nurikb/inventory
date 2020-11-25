@@ -1,0 +1,79 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+ Смена владельца
+{% endblock %}
+
+{% block content %}
+
+<form action="{% url 'update_url' admission_id=eq.id %}" method="post">
+  <div class="conteiner">
+    <h1 class="h4 text-start my-4 offset-1" style="height: 50px;">Смена владельца</h1>
+
+          {% csrf_token %}
+
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Дата</label>
+        {{ form.date }}
+      </div>
+      <div class="col-3 offset-1">
+        <label>Инвен-ый номер</label>
+        {{ form.inven_num }}
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Тип</label>
+        <input class='form-control' value="{{ eq.id_type }}" readonly >
+        {{ form.id_type }}
+
+      </div>
+
+      <div class="col-3 offset-1">
+        <label>Название учетной единицы</label>
+        <input class='form-control' value="{{ eq.eq_name }}" readonly >
+        <input id="id_eq_name" type="hidden" name="eq_name" class='form-control' value="{{ eq.eq_name.id }}" readonly required>
+
+
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-3 offset-1">
+        <label>Накладная</label>
+
+        <input class='form-control' value="{{ eq.upload }}" readonly >
+        <input id="id_upload" type="hidden" name="upload" class='form-control' value="{{ eq.upload.id }}" readonly required>
+
+      </div>
+
+      <div class="col-3 offset-1">
+        <label>Кабинет куда</label>
+
+        {{ form.id_room }}
+
+      </div>
+    </div>
+    <div class="row" style="height: 120px;">
+      <div class="col-3 offset-1">
+        <label>Сотрудник</label>
+
+        {{ form.id_workers }}
+
+      </div>
+
+      <div class="col-3 offset-1">
+        <label>Причина</label>
+
+        {{ relocation_form.movereason }}
+
+        <input id="id_id_previous_room" type="hidden" name="id_previous_room" class='form-control' value="{{ eq.id_room }}" readonly required>
+        <input id="id_previous_user" type="hidden" name="previous_user" class='form-control' value="{{ eq.id_workers }}" readonly required>
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary offset-1">продолжить</button>
+</form>
+
+{% endblock %}

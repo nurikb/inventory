@@ -1,0 +1,56 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+Записи о приходе
+{% endblock %}
+
+{% block content %}
+<form action="{% url 'updateAdmissions_url' admission_id=admission.id %}" method="post">
+<div class="conteiner">
+  <h1 class="h4 text-start my-4 offset-1" style="height: 50px;">Добавление записи о приходе</h1>
+
+
+    {% csrf_token %}
+
+    <div class="row">
+      <div class="col-3 offset-1">
+        <label>Дата прихода</label>
+
+        {{ form.date }}
+
+      </div>
+      <div class="col-4 offset-1">
+        <label>Наименование учетной единицы</label>
+
+        {{ form.name }}
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3 offset-1">
+        <label>Тип:</label>
+
+        {{ form.id_type }}
+      </div>
+
+      <div class="col-2 offset-1">
+        <label>Накладная</label>
+
+        {{ form.upload }}
+
+      </div>
+      </div>
+    <div class="row">
+        <div class="col-2 offset-1">
+        <label>Приход</label>
+
+        {{ form.admission }}
+
+        </div>
+
+    </div>
+</div>
+  <button type="submit" class="btn btn-primary offset-1 mt-5">сохранить изменения</button>
+</form>
+
+{% endblock %}

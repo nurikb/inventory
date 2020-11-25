@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% for y in page_object %}
+<div class="modal fade" id="deleteModal{{ y.id }}">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Удаление записи</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+
+      <form action="{% url 'admissions_url' %}" method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" name="delete" class='form-control  mb-3' value="{{ y.id }}" readonly>
+          <p> Удалить запись о приходе {{ y.name }}?</p>
+
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Удалить</button>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}

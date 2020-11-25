@@ -1,0 +1,37 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+Записи о приходе
+{% endblock %}
+
+{% block content %}
+<form action="{% url 'workers_url' %}" method="post">
+<div class="conteiner">
+  <h1 class="h4 text-start my-4 offset-1" style="height: 50px;">Добавление сотрудника</h1>
+
+    {% csrf_token %}
+
+
+      <div class="col-4 offset-1">
+        <label>Фамилия</label>
+        {{ form.first_name }}
+
+      </div>
+
+      <div class="col-4 offset-1">
+        <label>Имя</label>
+        {{ form.name }}
+
+      </div>
+
+      <div class="col-4 offset-1 mb-5">
+        <label>Отчество</label>
+        {{ form.last_name }}
+      </div>
+
+
+  <button type="submit" class="btn btn-primary offset-1">сохранить</button>
+  </div>
+  </form>
+
+{% endblock %}

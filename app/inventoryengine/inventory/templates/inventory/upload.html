@@ -1,0 +1,109 @@
+{% extends 'inventory/base_inventory.html' %}
+
+{% block title %}
+  Записи о приходе
+{% endblock %}
+{% block content %}
+<div class="conteiner">
+  <h1 class="h5 text-start my-3">Загруженные накладные</h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+      <form action="{% url 'upload_url' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+       <div class="row">
+         <div class="col-10">
+
+          {{ form.image }}
+          <label class="custom-file-label">Выберите файл</label>
+         </div>
+          <div class="col-1">
+            <button type="submit" class="btn btn-primary">добавить</button>
+          </div>
+          {% if form.errors %}
+          <div class="alert alert-danger mt-1">
+            {{ form.image.errors }}
+          </div>
+          {% endif %}
+      </div>
+
+      </form>
+    </div>
+    <form class="form-inline my-2 my-lg-0" action="{% url 'upload_url' %}">
+        <input class="form-control mr-sm-2" type="search" placeholder="поиск" aria-label="Search" name="search">
+        <button class="bbtn1"><i class="fa fa-refresh"></i></button>
+      </form>
+  </nav>
+  <pre>
+    <table class="table">
+      <thead class="thead">
+
+        <tr>
+          <th class="th-sm">Загруженныйе файлы</th>
+          <th class="th-sm">Дата загруски</th>
+          <th class="th-sm"></th>
+          <th class="th-sm"></th>
+        </tr>
+        {% for i in page_object.object_list %}
+        <tr>
+          <td><a href="#" data-toggle="modal" data-target="#myModal1{{ i.id }}">{{ i.name }}</a></td>
+          <td>{{ i.date }}</td>
+          <td></td>
+          <td><a href="#" class="bbtn-remove" data-toggle="modal" data-target="#myModal{{ i.id }}"><i class="fa fa-remove" style="color:red;"></i></a></td>
+        {% endfor %}
+        <tr>
+
+      </thead>
+    </table>
+  </pre>
+</div>
+
+{% for y in page_object %}
+<div class="modal fade" id="myModal{{ y.id }}">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Удаление накладной</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+
+      <form action="{% url 'upload_delete_url' %}" method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" name="delete" value="{{ y.id }}" readonly>
+          <p> Удалить накладную {{ y.name }}?</p>
+
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Удалить</button>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for u in page_object %}
+
+  <div class="modal fade" id="myModal1{{ u.id }}" role="dialog">
+    <div class="modal-dialog modal-lg" >
+      <div class="modal-content " style="height: 600px;">
+        <div class="modal-body">
+          <embed src="{{ u.image.url }}" width="760" height="550">
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endfor %}
+
+{% endblock %}
+
+<!-- The Modal -->
