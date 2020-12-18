@@ -24,7 +24,13 @@ from .views import redirect_inventory
 urlpatterns = [
     path('', redirect_inventory),
     path('admin/', admin.site.urls),
+    path('api-auth/', include('rest_framework.urls')),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('api/v1/', include('inventory.urls')),
     path('inventory/', include('inventory.urls')),
     path('', include("django.contrib.auth.urls")),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

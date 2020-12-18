@@ -77,7 +77,7 @@ class Relocation(models.Model):
 
 class EquipmentWorker(models.Model):
     date = models.DateField()
-    inven_num = models.CharField(max_length=50, null=True, unique=True)
+    inven_num = models.CharField(max_length=50, null=True)
     upload = models.ForeignKey(
     'Upload',
     blank=True,

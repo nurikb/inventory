@@ -71,6 +71,36 @@ class EquipmentWorkersForm(forms.ModelForm):
         eq_name = admission_id.id_type
         return eq_name
 
+
+class EquipmentWorkersUpdateForm(forms.ModelForm):
+    id_workers = forms.ModelChoiceField(queryset=Workers.objects.all(), required=False)
+    id_room = forms.ModelChoiceField(queryset=Room.objects.all())
+    upload = forms.ModelChoiceField(queryset=Upload.objects.all())
+    date = forms.DateField(widget=DateInput())
+
+    id_workers.widget.attrs.update({'class': 'form-control'})
+    id_room.widget.attrs.update({'class': 'form-control'})
+    upload.widget.attrs.update({'class': 'form-control'})
+    date.widget.attrs.update({'class': 'form-control'})
+
+
+    class Meta:
+        model = EquipmentWorker
+        fields = ['date', 'inven_num', 'eq_name', 'id_type', 'id_workers', 'id_room', 'upload']
+
+        readonly = ('id_type')
+
+        widgets = {
+        'inven_num': forms.TextInput(attrs={'class': 'form-control', 'id': 'demo'}),
+        'id_type': forms.HiddenInput(attrs={'class': 'form-control'}),
+        }
+
+
+    def clean_id_type(self):
+        admission_id = self.cleaned_data['eq_name']
+        eq_name = admission_id.id_type
+        return eq_name
+
 class RelocationForm(forms.ModelForm):
     class Meta:
         model = Relocation

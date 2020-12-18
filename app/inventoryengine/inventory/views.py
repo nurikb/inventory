@@ -1,11 +1,16 @@
+from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .serializers import AdmissionSerializer, AdmissionDetailSerializer, EquipmentWorkerSerializer,EquipmentWorkerDetailSerializer, AdmissionCreateSerializer, TypeEquipmentListSerializer, EquipmentWorkerCreateSerializer
+
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import View
-
 from .utils import Export_xlsMixin
 
-from .models import *
 from .forms import *
 from qrcode import *
 from django.db.models import Q
@@ -13,11 +18,101 @@ from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime
 
+class LargeResultsSetPagination(PageNumberPagination):
+    page_size = 1000
+    page_size_query_param = 'page_size'
+    max_page_size = 10000
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
+class AdmissionListView(APIView):
+    """вывод поступлений"""
+
+    def get(self, request):
+        admission = Admission.objects.all()
+        serializer = AdmissionSerializer(admission, many=True)
+        return Response(serializer.data)
+
+
+class AdmissionDetailView(APIView):
+    """вывод поступлений"""
+
+    def get(self, request, pk):
+        admission = Admission.objects.get(id=pk)
+        serializer = AdmissionDetailSerializer(admission)
+        return Response(serializer.data)
+
+
+class AddAdmissionView(APIView):
+    """добавление записей о приоде"""
+
+    def post(self, request):
+        addadmission = AdmissionCreateSerializer(data=request.data)
+        if addadmission.is_valid():
+            addadmission.save()
+        return Response(status=201)
+
+
+class EquipmentWorkerListView(generics.ListAPIView):
+    """вывод поступлений"""
+
+    # def get(self, request):
+    #     equipment = EquipmentWorker.objects.all()
+    #     serializer = EquipmentWorkerSerializer(equipment, many=True)
+    #     return Response(serializer.data)
+    queryset = EquipmentWorker.objects.all()
+    serializer_class = EquipmentWorkerSerializer
+
+
+class EquipmentWorkerDetailView(APIView):
+    """вывод поступлений"""
+
+    def get(self, request, pk):
+        equipment = EquipmentWorker.objects.get(id=pk)
+        serializer = EquipmentWorkerDetailSerializer(equipment)
+        return Response(serializer.data)
+
+
+class TypeEquipmentListView(APIView):
+    """вывод типа оборудования"""
+    def get(self, request):
+        type = Type.objects.all()
+        serializer = TypeEquipmentListSerializer(type, many=True)
+        return Response(serializer.data)
+
+
+class EquipmentWorkerCreateView(APIView):
+    """добавление записей закрепленных оборудований"""
+
+    def get_id(self, request):
+        e_id = request.data['inven_num']
+        return e_id
+
+    def post(self, request):
+        addequipment = EquipmentWorkerCreateSerializer(data=request.data)
+        if addequipment.is_valid():
+            addequipment.save(inven_num=self.get_id(request))
+            return Response(status=201)
+        else:
+            return Response(status=400)
+
+
+
 def relocation_list(request):
     search_query = request.GET.get('search', '')
 
     if search_query:
-        relocation = Relocation.objects.filter(Q(eq_name__icontains=search_query) | Q(movereason__icontains=search_query) | Q(previous_user__icontains=search_query) | Q(id_type__icontains=search_query) | Q(current_user__icontains=search_query) | Q(id_previous_room__icontains=search_query) | Q(id_current_room__icontains=search_query))
+        relocation = Relocation.objects.filter(Q(eq_name__icontains=search_query) |
+                                               Q(movereason__icontains=search_query) |
+                                               Q(previous_user__icontains=search_query) |
+                                               Q(id_type__icontains=search_query) |
+                                               Q(current_user__icontains=search_query) |
+                                               Q(id_previous_room__icontains=search_query) |
+                                               Q(id_current_room__icontains=search_query))
     else:
         relocation = Relocation.objects.all().order_by('-id')
 
@@ -46,6 +141,7 @@ def relocation_list(request):
     }
 
     return render(request, 'inventory/relocation.html', context=context)
+
 
 class UploadView(View):
     def get(self, request):
@@ -125,8 +221,7 @@ def upload_delete(request):
         return redirect(reverse('admissions_url'))
 
 
-
-class EquipmentView_Delete(View):
+class EquipmentViewDelete(View):
     def get(self, request):
 
         search_query = request.GET.get('search', '')
@@ -171,7 +266,7 @@ class EquipmentView_Delete(View):
             admission_decommission = admission.decommission+1
             admission.decommission = admission_decommission
 
-            relocation=Relocation()
+            relocation = Relocation()
             relocation.count = 1
             relocation.upload = decommission.upload.name
             relocation.inven_num = decommission.inven_num
@@ -189,6 +284,7 @@ class EquipmentView_Delete(View):
             admission.save()
 
             return redirect(reverse('equipmentsForWorkers_url'))
+
 
 class AdmissionView(View):
     def get(self, request):
@@ -234,6 +330,7 @@ class AdmissionView(View):
             admission.delete()
             return redirect(reverse('admissions_url'))
 
+
 class AdmissionCreate(LoginRequiredMixin, View):
     def get (self, request):
         form = AdmissionForm()
@@ -245,6 +342,7 @@ class AdmissionCreate(LoginRequiredMixin, View):
             form.save()
             return redirect(reverse('admissions_url'))
     raise_exception = True
+
 
 class AssignToWorker(LoginRequiredMixin, View):
     def get(self, request, admission_id):
@@ -284,29 +382,30 @@ class AssignToWorker(LoginRequiredMixin, View):
             admission.save()
             form.save()
             return redirect(reverse('equipmentsForWorkers_url'))
-        return render(request, 'inventory/assignToWorker.html',
+        else:
+            return render(request, 'inventory/assignToWorker.html',
         context={'form': form,
         'admission': admission})
+
 
 class AssignToWorkerUpdate(LoginRequiredMixin, View):
     def get(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
-        form = EquipmentWorkersForm(instance=eq)
+        form = EquipmentWorkersUpdateForm(instance=eq)
         relocation_form=RelocationForm(request.POST)
-
         return render(request, 'inventory/update.html',
         context={
         'form': form,
         'eq': eq,
         'relocation_form': relocation_form,
-        } )
+        })
 
     def post(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
+        # form = EquipmentWorkersForm(instance=eq)
         admission = eq.eq_name
-        bound_form = EquipmentWorkersForm(request.POST, instance=eq)
-        relocation_form=RelocationForm(request.POST)
-
+        bound_form = EquipmentWorkersUpdateForm(request.POST, instance=eq)
+        relocation_form = RelocationForm(request.POST)
         if bound_form.is_valid() and relocation_form.is_valid():
             out_of_stock = admission.out_of_stock
             in_stock = admission.in_stock
@@ -329,31 +428,34 @@ class AssignToWorkerUpdate(LoginRequiredMixin, View):
 
             relocation.save()
             admission.save()
-            update_form = bound_form.save()
+            bound_form.save()
             return redirect(reverse('equipmentsForWorkers_url'))
+        else:
+            return render(request, 'inventory/update.html',
+                          context={
+                              'form': bound_form,
+                              'eq': eq,
+                              'relocation_form': relocation_form,
+                          })
+
 
 class QrCreate(LoginRequiredMixin, View):
-    def get (self, request, admission_id):
+    def get(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
-        return render(request, 'inventory/qr_detail.html',context={
-        'eq': eq})
-
+        return render(request, 'inventory/qr_detail.html',context={'eq': eq})
 
     def post(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
-        qr = False
-        global data
 
         if request.method == 'POST':
-            qr = True
             data = request.POST['data']
             img = make(data)
-            img.save("app/inventoryengine/inventory/static/images/test.png")
+            img.save("inventory/static/images/test.png")
 
         else:
             pass
-        return render(request, 'inventory/qr_detail.html',context={
-        'eq': eq, 'data': data})
+        return render(request, 'inventory/qr_detail.html',context={'eq': eq, 'data': data})
+
 
 class WorkersCreate(View):
     def get(self, request):
@@ -366,6 +468,7 @@ class WorkersCreate(View):
             form.save()
         return redirect(reverse('workers_url'))
 
+
 class Export_xls(Export_xlsMixin, View):
 
     column = ['дата', 'тип', 'наименование', 'приход', 'расход', 'остаток']
@@ -373,18 +476,20 @@ class Export_xls(Export_xlsMixin, View):
 
     row = Admission.objects.all().values_list('id_type__name', 'name', 'admission', 'out_of_stock', 'in_stock')
 
+
 class Export_xls_workers(Export_xlsMixin, View):
 
     column = ['дата', 'тип', 'наименование', 'сотрудник', 'кабинет', 'инвен-ый номер']
     row_date = EquipmentWorker.objects.all().values_list('date')
 
     row = EquipmentWorker.objects.all().values_list('id_type__name', 'eq_name__name', 'id_workers__full_name', 'id_room__number', 'inven_num')
+
+
 class Export_xls_history(Export_xlsMixin, View):
 
-    column = ['дата', 'тип', 'наименование','инвен-ый номер', 'Откуда', 'Куда', 'Предыдущий владелец', 'Новый владелец', 'Причина']
+    column = ['дата', 'тип', 'наименование', 'инвен-ый номер', 'Откуда', 'Куда', 'Предыдущий владелец', 'Новый владелец', 'Причина']
     row_date = Relocation.objects.all().values_list('relocation_date')
 
-    row = Relocation.objects.all().values_list('id_type', 'eq_name', 'inven_num','id_previous_room', 'id_current_room', 'previous_user', 'current_user', 'movereason')
-
+    row = Relocation.objects.all().values_list('id_type', 'eq_name', 'inven_num', 'id_previous_room', 'id_current_room', 'previous_user', 'current_user', 'movereason')
 
 # Create your views here.
