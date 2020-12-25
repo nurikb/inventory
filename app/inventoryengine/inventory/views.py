@@ -1,9 +1,14 @@
 from rest_framework import generics
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .serializers import AdmissionSerializer, AdmissionDetailSerializer, EquipmentWorkerSerializer,EquipmentWorkerDetailSerializer, AdmissionCreateSerializer, TypeEquipmentListSerializer, EquipmentWorkerCreateSerializer
+from .serializers import (AdmissionSerializer,
+                          AdmissionDetailSerializer,
+                          EquipmentWorkerSerializer,
+                          EquipmentWorkerDetailSerializer,
+                          AdmissionCreateSerializer,
+                          TypeEquipmentListSerializer,
+                          EquipmentWorkerCreateSerializer)
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -17,11 +22,14 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime
+from .service import AdmissionFilter
+
 
 class LargeResultsSetPagination(PageNumberPagination):
     page_size = 1000
     page_size_query_param = 'page_size'
     max_page_size = 10000
+
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
@@ -29,32 +37,26 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-class AdmissionListView(APIView):
+class AdmissionListView(generics.ListAPIView):
     """вывод поступлений"""
 
-    def get(self, request):
-        admission = Admission.objects.all()
-        serializer = AdmissionSerializer(admission, many=True)
-        return Response(serializer.data)
+    queryset = Admission.objects.all()
+    serializer_class = AdmissionSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = AdmissionFilter
 
 
-class AdmissionDetailView(APIView):
+class AdmissionDetailView(generics.RetrieveAPIView):
     """вывод поступлений"""
 
-    def get(self, request, pk):
-        admission = Admission.objects.get(id=pk)
-        serializer = AdmissionDetailSerializer(admission)
-        return Response(serializer.data)
+    queryset = Admission.objects.filter()
+    serializer_class = AdmissionDetailSerializer
 
 
-class AddAdmissionView(APIView):
+class AddAdmissionView(generics.CreateAPIView):
     """добавление записей о приоде"""
 
-    def post(self, request):
-        addadmission = AdmissionCreateSerializer(data=request.data)
-        if addadmission.is_valid():
-            addadmission.save()
-        return Response(status=201)
+    serializer_class = AdmissionCreateSerializer
 
 
 class EquipmentWorkerListView(generics.ListAPIView):
@@ -68,38 +70,24 @@ class EquipmentWorkerListView(generics.ListAPIView):
     serializer_class = EquipmentWorkerSerializer
 
 
-class EquipmentWorkerDetailView(APIView):
+class EquipmentWorkerDetailView(generics.RetrieveAPIView):
     """вывод поступлений"""
 
-    def get(self, request, pk):
-        equipment = EquipmentWorker.objects.get(id=pk)
-        serializer = EquipmentWorkerDetailSerializer(equipment)
-        return Response(serializer.data)
+    queryset = EquipmentWorker.objects.filter()
+    serializer_class = EquipmentWorkerDetailSerializer
 
 
-class TypeEquipmentListView(APIView):
+class TypeEquipmentListView(generics.ListAPIView):
     """вывод типа оборудования"""
-    def get(self, request):
-        type = Type.objects.all()
-        serializer = TypeEquipmentListSerializer(type, many=True)
-        return Response(serializer.data)
+
+    queryset = Type.objects.all()
+    serializer_class = TypeEquipmentListSerializer
 
 
-class EquipmentWorkerCreateView(APIView):
+class EquipmentWorkerCreateView(generics.CreateAPIView):
     """добавление записей закрепленных оборудований"""
 
-    def get_id(self, request):
-        e_id = request.data['inven_num']
-        return e_id
-
-    def post(self, request):
-        addequipment = EquipmentWorkerCreateSerializer(data=request.data)
-        if addequipment.is_valid():
-            addequipment.save(inven_num=self.get_id(request))
-            return Response(status=201)
-        else:
-            return Response(status=400)
-
+    serializer_class = EquipmentWorkerCreateSerializer
 
 
 def relocation_list(request):
@@ -207,11 +195,12 @@ class UploadView(View):
             form.save()
             return redirect(reverse('upload_url'))
 
-        return render(request, 'inventory/upload.html', context={'form': form,'page_object': page,
-        'is_paginated': is_paginated,
-        'next_url': next_url,
-        'prev_url': prev_url})
-#
+        return render(request, 'inventory/upload.html', context={'form': form, 'page_object': page,
+                                                                 'is_paginated': is_paginated,
+                                                                 'next_url': next_url,
+                                                                 'prev_url': prev_url})
+
+
 def upload_delete(request):
     if request.method == 'POST':
         data = request.POST['delete']
@@ -223,7 +212,6 @@ def upload_delete(request):
 
 class EquipmentViewDelete(View):
     def get(self, request):
-
         search_query = request.GET.get('search', '')
 
         if search_query:
@@ -332,7 +320,7 @@ class AdmissionView(View):
 
 
 class AdmissionCreate(LoginRequiredMixin, View):
-    def get (self, request):
+    def get(self, request):
         form = AdmissionForm()
         return render(request, 'inventory/addAdmissions.html', context={'form': form})
 
@@ -384,8 +372,7 @@ class AssignToWorker(LoginRequiredMixin, View):
             return redirect(reverse('equipmentsForWorkers_url'))
         else:
             return render(request, 'inventory/assignToWorker.html',
-        context={'form': form,
-        'admission': admission})
+        context={'form': form, 'admission': admission})
 
 
 class AssignToWorkerUpdate(LoginRequiredMixin, View):
@@ -402,7 +389,6 @@ class AssignToWorkerUpdate(LoginRequiredMixin, View):
 
     def post(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
-        # form = EquipmentWorkersForm(instance=eq)
         admission = eq.eq_name
         bound_form = EquipmentWorkersUpdateForm(request.POST, instance=eq)
         relocation_form = RelocationForm(request.POST)
@@ -491,5 +477,3 @@ class Export_xls_history(Export_xlsMixin, View):
     row_date = Relocation.objects.all().values_list('relocation_date')
 
     row = Relocation.objects.all().values_list('id_type', 'eq_name', 'inven_num', 'id_previous_room', 'id_current_room', 'previous_user', 'current_user', 'movereason')
-
-# Create your views here.

@@ -31,7 +31,7 @@ class EquipmentTypeWorkerSerializer(serializers.ModelSerializer):
 
 class AdmissionDetailSerializer(serializers.ModelSerializer):
     """детали поступления"""
-    # id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
         model = Admission
@@ -58,10 +58,10 @@ class EquipmentWorkerSerializer(serializers.ModelSerializer):
 
 class EquipmentWorkerDetailSerializer(serializers.ModelSerializer):
     """детали поступления"""
-    # id_workers = serializers.SlugRelatedField(slug_field='full_name', read_only=True)
-    # id_room = serializers.SlugRelatedField(slug_field='number', read_only=True)
-    # id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    # eq_name = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    id_workers = serializers.SlugRelatedField(slug_field='full_name', read_only=True)
+    id_room = serializers.SlugRelatedField(slug_field='number', read_only=True)
+    id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    eq_name = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
         model = EquipmentWorker
@@ -76,8 +76,8 @@ class EquipmentWorkerCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        rating = EquipmentWorker.objects.update_or_create(
-            inven_num = validated_data.get('inven_num', None),
+        rating, _ = EquipmentWorker.objects.update_or_create(
+            inven_num=validated_data.get('inven_num', None),
             defaults={'date': validated_data.get('date'),
                       'upload': validated_data.get('upload'),
                       'eq_name': validated_data.get('eq_name'),
@@ -85,11 +85,8 @@ class EquipmentWorkerCreateSerializer(serializers.ModelSerializer):
                       'id_workers': validated_data.get('id_workers'),
                       'id_room': validated_data.get('id_room')
                       }
-
         )
-        print(rating)
         return rating
-
 
 
 class TypeEquipmentListSerializer(serializers.ModelSerializer):
