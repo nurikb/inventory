@@ -116,7 +116,7 @@ class EquipmentWorker(models.Model):
 
 class Upload(models.Model):
     name = models.CharField(max_length=50, blank=True)
-    image = models.ImageField(upload_to='media')
+    image = models.ImageField(upload_to='upload')
     date = models.DateField(auto_now=True, null=True)
     def __str__(self):
         return '{}'.format(self.name)

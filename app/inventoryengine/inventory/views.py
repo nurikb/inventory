@@ -319,7 +319,7 @@ class AdmissionView(View):
             return redirect(reverse('admissions_url'))
 
 
-class AdmissionCreate(LoginRequiredMixin, View):
+class AdmissionCreate(View):
     def get(self, request):
         form = AdmissionForm()
         return render(request, 'inventory/addAdmissions.html', context={'form': form})
@@ -332,7 +332,7 @@ class AdmissionCreate(LoginRequiredMixin, View):
     raise_exception = True
 
 
-class AssignToWorker(LoginRequiredMixin, View):
+class AssignToWorker(View):
     def get(self, request, admission_id):
         admission = Admission.objects.get(id=admission_id)
         form = EquipmentWorkersForm()
@@ -375,11 +375,11 @@ class AssignToWorker(LoginRequiredMixin, View):
         context={'form': form, 'admission': admission})
 
 
-class AssignToWorkerUpdate(LoginRequiredMixin, View):
+class AssignToWorkerUpdate(View):
     def get(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
         form = EquipmentWorkersUpdateForm(instance=eq)
-        relocation_form=RelocationForm(request.POST)
+        relocation_form = RelocationForm(request.POST)
         return render(request, 'inventory/update.html',
         context={
         'form': form,
@@ -399,7 +399,7 @@ class AssignToWorkerUpdate(LoginRequiredMixin, View):
             admission.out_of_stock = out_of_stock
             admission.in_stock = in_stock
 
-            relocation=Relocation()
+            relocation = Relocation()
             relocation.count = 1
             relocation.upload = bound_form.cleaned_data['upload']
             relocation.inven_num = bound_form.cleaned_data['inven_num']
@@ -425,7 +425,7 @@ class AssignToWorkerUpdate(LoginRequiredMixin, View):
                           })
 
 
-class QrCreate(LoginRequiredMixin, View):
+class QrCreate(View):
     def get(self, request, admission_id):
         eq = EquipmentWorker.objects.get(id=admission_id)
         return render(request, 'inventory/qr_detail.html',context={'eq': eq})

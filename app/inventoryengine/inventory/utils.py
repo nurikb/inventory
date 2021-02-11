@@ -1,8 +1,5 @@
-import os
-
 from django.http import HttpResponse
 import xlwt
-from pyexcel import source
 
 
 class Export_xlsMixin():
