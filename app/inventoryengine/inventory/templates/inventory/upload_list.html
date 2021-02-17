@@ -43,7 +43,7 @@
           <th class="th-sm"></th>
           <th class="th-sm"></th>
         </tr>
-        {% for i in page_object.object_list %}
+        {% for i in page_object %}
         <tr>
           <td><a href="#" data-toggle="modal" data-target="#myModal1{{ i.id }}">{{ i.name }}</a></td>
           <td>{{ i.date }}</td>
@@ -57,7 +57,7 @@
   </pre>
 </div>
 
-{% for y in page_object %}
+    {% for y in page_object %}
 <div class="modal fade" id="myModal{{ y.id }}">
 
   <div class="modal-dialog">
@@ -88,21 +88,18 @@
     </div>
   </div>
 </div>
-{% endfor %}
 
-{% for u in page_object %}
-
-  <div class="modal fade" id="myModal1{{ u.id }}" role="dialog">
+  <div class="modal fade" id="myModal1{{ y.id }}" role="dialog">
     <div class="modal-dialog modal-lg" >
       <div class="modal-content " style="height: 600px;">
         <div class="modal-body">
-          <embed src="{{ u.image.url }}" width="760" height="550">
+          <embed src="{{ y.image.url }}" width="760" height="550">
         </div>
       </div>
     </div>
   </div>
+    {% endfor %}
 
-{% endfor %}
 
 {% endblock %}
 

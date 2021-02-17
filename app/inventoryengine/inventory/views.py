@@ -3,9 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 
 from .serializers import (AdmissionSerializer,
-                          AdmissionDetailSerializer,
                           EquipmentWorkerSerializer,
-                          EquipmentWorkerDetailSerializer,
                           AdmissionCreateSerializer,
                           TypeEquipmentListSerializer,
                           EquipmentWorkerCreateSerializer)
@@ -13,14 +11,13 @@ from .serializers import (AdmissionSerializer,
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.views.generic import View
+from django.views.generic import View, ListView, CreateView
 from .utils import Export_xlsMixin
 
 from .forms import *
 from qrcode import *
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime
 from .service import AdmissionFilter
 
@@ -46,21 +43,14 @@ class AdmissionListView(generics.ListAPIView):
     filterset_class = AdmissionFilter
 
 
-class AdmissionDetailView(generics.RetrieveAPIView):
-    """вывод поступлений"""
-
-    queryset = Admission.objects.filter()
-    serializer_class = AdmissionDetailSerializer
-
-
 class AddAdmissionView(generics.CreateAPIView):
-    """добавление записей о приоде"""
+    """добавление записей о приходе"""
 
     serializer_class = AdmissionCreateSerializer
 
 
 class EquipmentWorkerListView(generics.ListAPIView):
-    """вывод поступлений"""
+    """вывод списка закрепленных учетных единиц"""
 
     # def get(self, request):
     #     equipment = EquipmentWorker.objects.all()
@@ -68,13 +58,6 @@ class EquipmentWorkerListView(generics.ListAPIView):
     #     return Response(serializer.data)
     queryset = EquipmentWorker.objects.all()
     serializer_class = EquipmentWorkerSerializer
-
-
-class EquipmentWorkerDetailView(generics.RetrieveAPIView):
-    """вывод поступлений"""
-
-    queryset = EquipmentWorker.objects.filter()
-    serializer_class = EquipmentWorkerDetailSerializer
 
 
 class TypeEquipmentListView(generics.ListAPIView):
@@ -90,45 +73,35 @@ class EquipmentWorkerCreateView(generics.CreateAPIView):
     serializer_class = EquipmentWorkerCreateSerializer
 
 
-def relocation_list(request):
-    search_query = request.GET.get('search', '')
 
-    if search_query:
-        relocation = Relocation.objects.filter(Q(eq_name__icontains=search_query) |
-                                               Q(movereason__icontains=search_query) |
-                                               Q(previous_user__icontains=search_query) |
-                                               Q(id_type__icontains=search_query) |
-                                               Q(current_user__icontains=search_query) |
-                                               Q(id_previous_room__icontains=search_query) |
-                                               Q(id_current_room__icontains=search_query))
-    else:
-        relocation = Relocation.objects.all().order_by('-id')
 
-    paginator = Paginator(relocation, 10)
 
-    page_number = request.GET.get('page', 1)
-    page = paginator.get_page(page_number)
 
-    is_paginated = page.has_other_pages()
 
-    if page.has_previous():
-        prev_url = '?page={}'.format(page.previous_page_number())
-    else:
-        prev_url = ''
 
-    if page.has_next():
-        next_url = '?page={}'.format(page.next_page_number())
-    else:
-        next_url = ''
 
-    context = {
-    'page_object': page,
-    'is_paginated': is_paginated,
-    'next_url': next_url,
-    'prev_url': prev_url
-    }
 
-    return render(request, 'inventory/relocation.html', context=context)
+
+
+class AdmissionView(ListView):
+    """вывод поступлений"""
+
+    model = Admission
+    context_object_name = 'page_object'
+
+
+class AdmissionCreateView(CreateView):
+    """добавление записей о приходе"""
+
+    model = Admission
+    form_class = AdmissionForm
+    template_name = 'inventory/addAdmissions.html'
+
+
+class RelocationListView(ListView):
+
+    model = Relocation
+    context_object_name = 'page_object'
 
 
 class UploadView(View):
@@ -136,11 +109,11 @@ class UploadView(View):
         search_query = request.GET.get('search', '')
 
         if search_query:
-            admission = Upload.objects.filter(name__icontains=search_query)
+            upload = Upload.objects.filter(name__icontains=search_query)
         else:
-            admission = Upload.objects.all().order_by('-id')
+            upload = Upload.objects.all().order_by('-id')
 
-        paginator = Paginator(admission, 10)
+        paginator = Paginator(upload, 10)
 
         page_number = request.GET.get('page', 1)
         page = paginator.get_page(page_number)
@@ -164,41 +137,15 @@ class UploadView(View):
         'next_url': next_url,
         'prev_url': prev_url
         }
+        print(context['page_object'])
 
-        return render(request, 'inventory/upload.html', context=context)
+        return render(request, 'inventory/upload_list.html', context=context)
 
     def post(self, request):
-        search_query = request.GET.get('search', '')
-
-        if search_query:
-            admission = Upload.objects.filter(name__icontains=search_query)
-        else:
-            admission = Upload.objects.all().order_by('-id')
-        paginator = Paginator(admission, 10)
-
-        page_number = request.GET.get('page', 1)
-        page = paginator.get_page(page_number)
-
-        is_paginated = page.has_other_pages()
-
-        if page.has_previous():
-            prev_url = '?page={}'.format(page.previous_page_number())
-        else:
-            prev_url = ''
-
-        if page.has_next():
-            next_url = '?page={}'.format(page.next_page_number())
-        else:
-            next_url = ''
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect(reverse('upload_url'))
-
-        return render(request, 'inventory/upload.html', context={'form': form, 'page_object': page,
-                                                                 'is_paginated': is_paginated,
-                                                                 'next_url': next_url,
-                                                                 'prev_url': prev_url})
 
 
 def upload_delete(request):
@@ -272,64 +219,6 @@ class EquipmentViewDelete(View):
             admission.save()
 
             return redirect(reverse('equipmentsForWorkers_url'))
-
-
-class AdmissionView(View):
-    def get(self, request):
-        search_query = request.GET.get('search', '')
-
-        if search_query:
-            admission = Admission.objects.filter(Q(name__icontains=search_query) | Q(id_type__name__icontains=search_query))
-        else:
-            admission = Admission.objects.all().order_by('-id')
-
-        paginator = Paginator(admission, 10)
-
-        page_number = request.GET.get('page', 1)
-        page = paginator.get_page(page_number)
-
-        is_paginated = page.has_other_pages()
-
-        if page.has_previous():
-            prev_url = '?page={}'.format(page.previous_page_number())
-        else:
-            prev_url = ''
-
-        if page.has_next():
-            next_url = '?page={}'.format(page.next_page_number())
-        else:
-            next_url = ''
-
-        context = {
-        'page_object': page,
-        'is_paginated': is_paginated,
-        'next_url': next_url,
-        'prev_url': prev_url
-        }
-
-        return render(request, 'inventory/index.html', context=context)
-
-    def post(self, request):
-        if request.method == 'POST':
-            data = request.POST['delete']
-            admission = Admission.objects.get(id=data)
-            equipments = EquipmentWorker.objects.filter(eq_name=admission.id)
-            equipments.delete()
-            admission.delete()
-            return redirect(reverse('admissions_url'))
-
-
-class AdmissionCreate(View):
-    def get(self, request):
-        form = AdmissionForm()
-        return render(request, 'inventory/addAdmissions.html', context={'form': form})
-
-    def post(self, request):
-        form = AdmissionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('admissions_url'))
-    raise_exception = True
 
 
 class AssignToWorker(View):

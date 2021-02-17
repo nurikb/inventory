@@ -8,10 +8,8 @@ from .views import *
 
 urlpatterns = [
     path('admission/', views.AdmissionListView.as_view()),
-    path('admission/<int:pk>', views.AdmissionDetailView.as_view()),
     path('addadmission/', views.AddAdmissionView.as_view()),
     path('equipment/', views.EquipmentWorkerListView.as_view()),
-    path('equipment/<int:pk>', views.EquipmentWorkerDetailView.as_view()),
     path('type/', views.TypeEquipmentListView.as_view()),
     path('addequipment/', views.EquipmentWorkerCreateView.as_view()),
 
@@ -19,9 +17,9 @@ urlpatterns = [
     path('upload/', UploadView.as_view(), name='upload_url'),
     path('upload/delete/', upload_delete, name='upload_delete_url'),
     path('addWorker/', WorkersCreate.as_view(), name='workers_url'),
-    path('relocation/', relocation_list, name='relocation_history_url'),
+    path('relocation/', RelocationListView.as_view(), name='relocation_history_url'),
     path('equipmentsForWorkers/', EquipmentViewDelete.as_view(), name='equipmentsForWorkers_url'),
-    path('addAdmissions/', AdmissionCreate.as_view(), name='addAdmissions_url'),
+    path('addAdmissions/', AdmissionCreateView.as_view(), name='addAdmissions_url'),
     path('assignToWorker/<str:admission_id>/', AssignToWorker.as_view(), name='assign_to_worker_url'),
     path('assignToWorker/<str:admission_id>/update/', AssignToWorkerUpdate.as_view(), name='update_url'),
     path('assignToWorker/<str:admission_id>/qr/', QrCreate.as_view(), name='qr_url'),

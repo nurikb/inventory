@@ -3,8 +3,10 @@ from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
 
+
 class DateInput(forms.DateInput):
     input_type = 'date'
+
 
 class AdmissionForm(forms.ModelForm):
     id_type = forms.ModelChoiceField(queryset=Type.objects.all())
@@ -26,7 +28,6 @@ class AdmissionForm(forms.ModelForm):
 
         }
 
-
     def clean_in_stock(self):
         return self.cleaned_data['admission']
 
@@ -35,6 +36,7 @@ class AdmissionForm(forms.ModelForm):
 
     def clean_out_of_stock(self):
         return 0
+
 
 class EquipmentWorkersForm(forms.ModelForm):
     id_workers = forms.ModelChoiceField(queryset=Workers.objects.all(), required=False)

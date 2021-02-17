@@ -29,15 +29,6 @@ class EquipmentTypeWorkerSerializer(serializers.ModelSerializer):
         fields = ('name', 'admission_e')
 
 
-class AdmissionDetailSerializer(serializers.ModelSerializer):
-    """детали поступления"""
-    id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
-
-    class Meta:
-        model = Admission
-        fields = '__all__'
-
-
 class AdmissionCreateSerializer(serializers.ModelSerializer):
     """добавление записи"""
 
@@ -54,18 +45,6 @@ class EquipmentWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentWorker
         fields = ('id_workers', 'id_room')
-
-
-class EquipmentWorkerDetailSerializer(serializers.ModelSerializer):
-    """детали поступления"""
-    id_workers = serializers.SlugRelatedField(slug_field='full_name', read_only=True)
-    id_room = serializers.SlugRelatedField(slug_field='number', read_only=True)
-    id_type = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    eq_name = serializers.SlugRelatedField(slug_field='name', read_only=True)
-
-    class Meta:
-        model = EquipmentWorker
-        fields = "__all__"
 
 
 class EquipmentWorkerCreateSerializer(serializers.ModelSerializer):
